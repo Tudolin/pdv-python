@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Item - PDV Restaurante</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+    <h1>Editar Item</h1>
+    <form action="{{ url_for('editar_item', id=item.id) }}" method="post">
+        <label for="nome">Nome do Item:</label>
+        <input type="text" id="nome" name="nome" value="{{ item.nome }}">
+
+        <label for="preco">Preço:</label>
+        <input type="number" id="preco" name="preco" value="{{ item.preco }}" step="0.01">
+
+        <label for="codigo">Código do item</label>
+        <input type="number" id="codigo" name="codigo" value="{{ item.codigo }}">
+
+        <label for="tipo_unidade">Tipo de Unidade:</label>
+        <select id="tipo_unidade" name="tipo_unidade" required>
+            <option value="KG" {% if item.tipo_unidade == 'KG' %} selected {% endif %}>Quilograma (KG)</option>
+            <option value="UNIDADE" {% if item.tipo_unidade == 'UNIDADE' %} selected {% endif %}>Unidade (UN)</option>
+        </select>
+        <label for="codigo">Código de barras</label>
+        <input type="number" id="codigo_barras" name="codigo_barras" value="{{ item.codigo_barras }}">
+
+        <button type="submit">Atualizar Item</button>
+    </form>
+</body>
+</html>

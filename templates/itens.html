@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <!-- ... -->
+</head>
+<body>
+    <h1>Gerenciamento de Itens</h1>
+    <a href="{{ url_for('novo_item') }}">Adicionar Novo Item</a>
+    <table>
+        <thead>
+            <tr>
+                <th>Codigo</th>
+                <th>Nome</th>
+                <th>Preço</th>
+                <th>Tipo de Unidade</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in itens %}
+            <tr>
+                <td>{{item.codigo}}</td>
+                <td>{{ item.nome }}</td>
+                <td>R$ {{ "%.2f"|format(item.preco) }}</td>
+                <td>{{ item.tipo_unidade }}</td>
+                <td>{{ item.codigo_barras}}</td>
+                <td>
+                    <a href="{{ url_for('editar_item', id=item.id) }}">Editar</a>
+                    <form action="{{ url_for('excluir_item', id=item.id) }}" method="post">
+                        <button type="submit">Excluir</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

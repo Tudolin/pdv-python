@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nova Venda - PDV Restaurante</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='estilos.css') }}">
+</head>
+<body>
+<h1>Nova Venda</h1>
+<form id="form-venda" action="{{ url_for('nova_venda') }}" method="POST">
+    <label for="barcode">Código de Barras:</label>
+    <input type="text" id="barcode" name="barcode" required />
+
+    <label for="quantidade">Quantidade:</label>
+    <input type="number" id="quantidade" name="quantidade" step="0.01" />
+
+    <button type="button" onclick="adicionarProduto()">Adicionar Produto</button>
+
+    {% if carrinho %}
+    <h2>Produtos Adicionados</h2>
+    <table id="tabela-produtos">
+        <thead>
+        <tr>
+            <th>Código</th>
+            <th>Nome</th>
+            <th>Quantidade</th>
+            <th>Preço Unitário</th>
+            <th>Subtotal</th>
+            <th>Ações</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for item in carrinho %}
+            <tr>
+            <td>{{ item.codigo }}</td>
+            <td>{{ item.nome }}</td>
+            <td>{{ item.quantidade }}</td>
+            <td>{{ item.preco_unitario }}</td>
+            <td>{{ item.subtotal }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <label for="total-venda">Total da Venda:</label>
+    <input type="number" id="total-venda" name="total_venda" readonly />
+
+    <form action="{{ url_for('finalizar_venda') }}" method="post">
+        <label for="total-venda">Total da Venda:</label>
+        <input type="number" id="total-venda" name="total_venda" value="{{ total_venda }}" readonly>
+
+        <label for="metodo_pagamento">Método de Pagamento:</label>
+        <select id="metodo_pagamento" name="metodo_pagamento" required>
+        <option value="dinheiro">Dinheiro</option>
+        <option value="cartao_credito">Cartão de Crédito</option>
+        <option value="cartao_debito">Cartão de Débito</option>
+        </select>
+
+        <button type="submit">Finalizar Venda</button>
+    </form>
+    {% else %}
+    <p>Nenhum produto adicionado ainda.</p>
+    {% endif %}
+</form>
+<script>
+    function adicionarProduto() {
+        // Obter código de barras do formulário
+        var barcode = document.getElementById('barcode').value;
+    
+        // Criar requisição AJAX para enviar código de barras ao servidor
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '{{ url_for('nova_venda') }}', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                var response = JSON.parse(xhr.responseText);
+                if (response.item) {
+                    // Extrair dados do item e valor total do produto
+                    var itemCodigo = response.item.codigo;
+                    var nomeProduto = response.item.nome;
+                    var precoUnitario = response.item.preco;
+                    var valorTotal = response.valorTotal;
+    
+                    // Calcular a quantidade com base no valor total e preço unitário
+                    var quantidade = valorTotal / precoUnitario;
+    
+                    // Adicionar produto ao carrinho
+                    var carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
+                    carrinho.push({
+                        codigo: itemCodigo,
+                        nome: nomeProduto,
+                        quantidade: quantidade,
+                        precoUnitario: precoUnitario,
+                        subtotal: quantidade * precoUnitario
+                    });
+                    localStorage.setItem('carrinho', JSON.stringify(carrinho));
+    
+                    // Atualizar a tabela de produtos e o total da venda
+                    atualizarTabela();
+                    atualizarTotal();
+                } else {
+                    alert('Produto não encontrado com base no código de barras.');
+                }
+            } else {
+                console.error('Erro ao enviar código de barras para o servidor:', xhr.statusText);
+            }
+        };
+    
+        // Enviar código de barras para o servidor
+        xhr.send('barcode=' + barcode);
+    }
+    

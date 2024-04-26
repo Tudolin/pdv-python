@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nova Venda - PDV Restaurante</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='estilos.css') }}">
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</head>
+<body>
+<h1>Nova Venda</h1>
+
+<div class="search-container">
+    <label for="barcode">Código de Barras:</label>
+    <input type="text" id="barcode" name="barcode" placeholder="Insira o código de barras">
+    <button id="search-button">Buscar Produto</button>
+</div>
+
+<div class="product-info">
+    </div>
+
+<div class="cart">
+    <h2>Carrinho</h2>
+    <table id="cart-table">
+    <thead>
+        <tr>
+        <th>Código</th>
+        <th>Nome</th>
+        <th>Quantidade</th>
+        <th>Preço Unitário</th>
+        <th>Subtotal</th>
+        <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+    </table>
+
+    <label for="total-venda">Total da Venda:</label>
+    <input type="number" id="total-venda" name="total_venda" readonly>
+
+    <form action="{{ url_for('finalizar_venda') }}" method="post">
+    <label for="total-venda">Total da Venda:</label>
+    <input type="number" id="total-venda" name="total_venda" value="{{ total_venda }}" readonly>
+
+    <label for="metodo_pagamento">Método de Pagamento:</label>
+    <select id="metodo_pagamento" name="metodo_pagamento" required>
+        <option value="dinheiro">Dinheiro</option>
+        <option value="cartao_credito">Cartão de Crédito</option>
+        <option value="cartao_debito">Cartão de Débito</option>
+    </select>
+
+    <button type="submit">Finalizar Venda</button>
+    </form>
+</div>
+</body>
+</html>

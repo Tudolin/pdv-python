@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Histórico de Vendas - PDV Restaurante</title>
+<link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+    <header>
+        <h1>Histórico de Vendas</h1>
+        <nav>
+            <ul>
+                <li><a href="/">PDV</a></li>
+                <li><a href="/itens">Itens</a></li>
+                <li><a href="/logout">Sair</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID da Venda</th>
+                    <th>Itens Vendidos</th>
+                    <th>Total</th>
+                    <th>Método de Pagamento</th>
+                    <th>Data/Hora</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for venda in vendas %}
+                <tr>
+                    <td>{{ venda.id }}</td>
+                    <td>
+                        {% for item in venda.itens %}
+                        {{ item.nome }}{% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td>R$ {{ "%.2f"|format(venda.total) }}</td>
+                    <td>{{ venda.metodo_pagamento }}</td>
+                    <td>{{ venda.data_hora }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </main>
+    
+    <footer>
+        <p>© 2024 Restaurante PDV</p>
+    </footer>
+</body>
+</html>

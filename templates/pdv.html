@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDV - Restaurante</title>
+<link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+    <header>
+        <h1>PDV do Restaurante</h1>
+        <nav>
+            <ul>
+                <li><a href="/itens">Gerenciar Itens</a></li>
+                <li><a href="/vendas">Histórico de Vendas</a></li>
+                <li><a href="/logout">Sair</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main>
+        <!-- Aqui você pode adicionar o conteúdo para a frente de caixa -->
+        <section class="frente-caixa">
+            <h2>Frente de Caixa</h2>
+            <button id="abrir-venda" onclick="iniciarVenda()">Iniciar Venda</button>
+        </section>
+    </main>
+    
+    <footer>
+        <p>© 2024 Restaurante PDV</p>
+    </footer>
+</body>
+</html>
+<script>
+    function iniciarVenda() {
+        // Abre uma nova guia com a URL da página de vendas
+        window.open('/vendas/nova', '_blank');
+    }
+</script>
+    
