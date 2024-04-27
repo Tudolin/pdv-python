@@ -1,167 +1,139 @@
-from flask import (Flask, current_app, redirect, render_template, request,
-                   session, url_for)
-from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import check_password_hash, generate_password_hash
+import csv
+import datetime
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///restaurante.db'
-app.config['SECRET_KEY'] = 'sua_chave_secreta_aqui'
-db = SQLAlchemy(app)
+from flask import Flask, redirect, render_template, request
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
-class Usuario(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    nome_usuario = db.Column(db.String(50), unique=True, nullable=False)
-    senha_hash = db.Column(db.String(100), nullable=False)
+app = Flask(__name__, static_folder='static')
 
-class Item(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    codigo = db.Column(db.Integer, nullable=False)
-    nome = db.Column(db.String(100), nullable=False)
-    preco = db.Column(db.Float, nullable=False)
-    tipo_unidade = db.Column(db.String(10), nullable=False)  # 'KG' ou 'UNIDADE'
-    codigo_barras = db.Column(db.Integer, nullable = True)
+metodo_pagamento = ""
+# Dados dos produtos (mesma estrutura do seu código)
+data = {}
+with open("instance/produtos_export.csv") as csvfile:
+    reader = csv.DictReader(csvfile)
+    for row in reader:
+        data[row['codigo_barras']] = row
 
-class Venda(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    itens = db.relationship('ItemVenda', backref='venda', lazy=True)
-    total = db.Column(db.Float, nullable=False)
-    metodo_pagamento = db.Column(db.String(50), nullable=False)
+def ler_cod(cod_bar):
+    item_cod = cod_bar[:7]
+    valor = cod_bar[7:]  # Os últimos 7 dígitos representam o valor total
+    valor = int(valor)  # Converter para valor em reais (dividir por 100)
 
-class ItemVenda(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    venda_id = db.Column(db.Integer, db.ForeignKey('venda.id'), nullable=False)
-    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
-    quantidade = db.Column(db.Float, nullable=False)
+    try:
+        item = data[item_cod]
+        nome = item['nome']
+        preco = float(item[' preco '].replace('R$ ', ''))
+        peso = (valor / preco) / 1000
+        return nome, peso, preco
+    except KeyError:
+        raise ValueError("Código de barras inválido")
 
-@app.route('/')
-def index():
-    if 'usuario_logado' not in session:
-        return redirect(url_for('login'))
-    return render_template('pdv.html')
+# Lista para armazenar os itens do carrinho
+carrinho = []
 
-@app.route('/cadastro', methods=['GET', 'POST'])
-def cadastro():
+@app.route('/', methods=['GET', 'POST'])
+def pdv():
     if request.method == 'POST':
-        nome_usuario = request.form['nome_usuario']
-        senha = request.form['senha']
-        senha_hash = generate_password_hash(senha)
+        cod_bar = request.form['cod_bar']
+        item, peso, preco = ler_cod(cod_bar)
+        if item is None:
+            return render_template('index.html', error=True)
         
-        # Verifique se o nome de usuário já existe
-        usuario_existente = Usuario.query.filter_by(nome_usuario=nome_usuario).first()
-        if usuario_existente:
-            return 'Nome de usuário já está em uso. Escolha outro nome.'
+        # Adicionar o item ao carrinho
+        carrinho.append((item, peso, preco))
         
-        # Crie um novo usuário
-        novo_usuario = Usuario(nome_usuario=nome_usuario, senha_hash=senha_hash)
-        db.session.add(novo_usuario)
-        db.session.commit()
-        
-        return 'Cadastro realizado com sucesso!'
+        return render_template('index.html', item=item, valor=peso, preco=preco)
     
-    return render_template('cadastro.html')
+    return render_template('index.html', error=False)
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        nome_usuario = request.form['nome_usuario']
-        senha = request.form['senha']
-        usuario = Usuario.query.filter_by(nome_usuario=nome_usuario).first()
-        if usuario and check_password_hash(usuario.senha_hash, senha):
-            session['usuario_logado'] = usuario.nome_usuario
-            return redirect(url_for('index'))
-        return 'Login falhou!'
-    return render_template('login.html')
+@app.route('/recibo')
+def exibir_recibo():
+    total = calcular_total(carrinho)
+    recibo = imprimir_recibo(carrinho, total)
+    return render_template('recibo.html', recibo=recibo, total=total)
 
-@app.route('/logout')
-def logout():
-    session.pop('usuario_logado', None)
-    return redirect(url_for('login'))
+def calcular_total(carrinho):
+    total = 0
+    for _, valor, preco in carrinho:
+        total += valor * preco
+    return total
 
-@app.route('/vendas', methods=['GET'])
-def vendas():
-    if request.method == 'GET':
-        todas_vendas = Venda.query.all()
-        return render_template('vendas.html', vendas=todas_vendas)
-    
-@app.route('/itens')
-def listar_itens():
-    todos_itens = Item.query.all()
-    return render_template('itens.html', itens=todos_itens)
+def imprimir_recibo(carrinho, total):
+    recibo = []
+    for item, _, peso in carrinho:
+        valor_item = _ * peso
+        recibo.append((item, valor_item, peso))
+    return recibo
 
-@app.route('/itens/novo', methods=['GET', 'POST'])
-def novo_item():
-    if request.method == 'POST':
-        nome = request.form['nome']
-        codigo = request.form['codigo']
-        preco = request.form['preco']
-        tipo_unidade = request.form['tipo_unidade']
-        codigo_barras = request.form['codigo_barras']
-        novo_item = Item(nome=nome,codigo=codigo, preco=preco, tipo_unidade=tipo_unidade, codigo_barras=codigo_barras)
-        db.session.add(novo_item)
-        db.session.commit()
-        return redirect(url_for('listar_itens'))
-    return render_template('novo_item.html')
+@app.route('/finalizar', methods=['POST'])
+def checkout():
 
-@app.route('/itens/editar/<int:id>', methods=['GET', 'POST'])
-def editar_item(id):
-    item = Item.query.get_or_404(id)
-    if request.method == 'POST':
-        item.nome = request.form['nome']
-        item.preco = request.form['preco']
-        item.codigo = request.form['codigo']
-        item.tipo_unidade = request.form['tipo_unidade']
-        item.codigo_barras = request.form['codigo_barras']
-        db.session.commit()
-        return redirect(url_for('listar_itens'))
-    return render_template('editar_item.html', item=item)
+    global metodo_pagamento
+    total = calcular_total(carrinho)
+    quantia_pg = request.form.get("quantia_pg")
+    metodo_pagamento = request.form.get("metodo_pagamento")
 
-@app.route('/itens/excluir/<int:id>', methods=['POST'])
-def excluir_item(id):
-    item = Item.query.get_or_404(id)
-    db.session.delete(item)
-    db.session.commit()
-    return redirect(url_for('listar_itens'))
 
-@app.route('/vendas/nova', methods=['POST', 'GET'])
-def nova_venda():
-    if 'carrinho' not in session:
-        session['carrinho'] = []
-
-    if request.method == 'POST':
-        # Capture barcode input (assuming from a form field or other method)
-        barcode = request.form.get('barcode')
-
-        if barcode:
-            # Extract item code from the barcode (assuming it's the first part)
-            codigo_produto = barcode[:7]
-
-            # Query the database for the product using the extracted code
-            produto = Item.query.filter_by(codigo=codigo_produto).first()
-
-            if produto:
-                # Product found, proceed with adding to cart
-                item_venda = {
-                    'codigo_barras': produto.codigo,
-                    'nome': produto.nome,
-                    'quantidade': request.form.get('quantidade', type=float),
-                    'preco_unitario': produto.preco,
-                    'subtotal': produto.preco * request.form.get('quantidade', type=float)
-                }
-                session['carrinho'].append(item_venda)
-                session.modified = True
-            else:
-                # Product not found, display error message
-                return {'Produto não encontrado', 'erro'}, 404
-
+    if quantia_pg is not None:
+        quantia_pg = float(quantia_pg)
+        if quantia_pg == 0:
+            troco = 0
         else:
-            # Handle case where no barcode was provided
-            return {'Campo código de barras obrigatório', 'erro'}, 400  # You can adjust the error code and message
+            troco = quantia_pg - total
+        return render_template('finalizar.html', total=total, troco=troco)
+    else:
+        quantia_pg = 0.0
+        quantia_pg = float(quantia_pg)
+        troco = quantia_pg - total
+        return render_template('finalizar.html', total=total, troco=troco)
 
-    carrinho = session.get('carrinho', [])
-    total_venda = sum(item['subtotal'] for item in carrinho)
-    return render_template('nova_venda.html', carrinho=carrinho, total_venda=total_venda)
+@app.route('/zerar_carrinho', methods=['POST'])
+def finalizar_compra():
+    global carrinho  # Usamos a variável global para acessar o carrinho
 
-with app.app_context():
-    if __name__ == '__main__':
-        db.create_all()
-        app.run(debug=True)
+    # Lógica para finalizar a compra (limpar o carrinho)
+    carrinho = []  # Zera o carrinho
+
+    # Redireciona para a página inicial
+    return redirect('/')
+
+@app.route('/imprimir_nf', methods=['POST'])
+def generate_receipt():
+    total = calcular_total(carrinho)
+    data_hora = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    teste = request.form.get("cpf")
+    if len(teste) < 11:
+        teste = teste.zfill(11)
+    cpf = '{}.{}.{}-{}'.format(teste[:3], teste[3:6], teste[6:9], teste[9:])
+    metodo_pagamento = metodo_pagamento
+    # Gerando o recibo em formato PDF
+    filename = "receipt.pdf"
+    c = canvas.Canvas(filename, pagesize=letter)
+    c.drawString(100, 700, "Recibo Não Fiscal")
+    c.drawString(100, 680, f"Data e Hora: {data_hora}")
+    c.drawString(100, 660, f"CPF: {cpf}")
+
+    # Adicione os itens comprados ao recibo
+    y = 640
+    for item, valor_item, peso in recibo:
+        c.drawString(100, y, f"{item} - R$ {valor_item:.2f}")
+        y -= 20
+
+    c.drawString(100, y, f"Total: R$ {total:.2f}")
+    c.save()
+
+    return f"Recibo gerado com sucesso! Verifique o arquivo {filename}."
+
+@app.route('/recibo', methods=['POST'])
+def imprimir_nf():
+    total = calcular_total(carrinho)
+    recibo = imprimir_recibo(carrinho, total)
+    data_hora = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    cpf = request.form.get("cpf")  # Se o CPF foi incluído no formulário
+
+    # Renderizando o recibo não fiscal
+    return render_template('imprimir_nf.html', recibo=recibo, total=total, data_hora=data_hora, cpf=cpf)
+
+if __name__ == '__main__':
+    app.run(debug=True)

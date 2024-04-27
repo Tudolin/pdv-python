@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recibo Não Fiscal</title>
+    <style>
+        /* Estilos para centralizar o conteúdo verticalmente */
+        body, html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="static\logo-loja.png" width="25%">
+        <h1>Recibo Não Fiscal</h1>
+        
+        <br>
+        ====================================
+        <h3>Casa das Massas Pinheirinho - (41) 3268-2817</h3>
+        <p>Rua Mário Gomes Cezar - Nº230 - Pinheirinho</p>
+        <p>Curitiba - PR</p>
+        <p>Data e Hora: {{ data_hora }}</p>
+        ====================================
+        <h2>Itens Comprados:</h2>
+        <ul>
+            {% for item, valor_item, peso in recibo %}
+                <li>{{ item }} - R$ {{ valor_item|round(2) }}</li>
+            {% endfor %}
+        </ul>
+
+        <p><strong> Total: R$ {{ total|round(2) }} </strong></p>
+        <p>CPF: {{ cpf }}</p>
+        ====================================
+        <p>Parabéns, você acaba de comprar a melhor massa da região!!</p>
+        <p>Muito obrigado pela preferencia, volte sempre c:</p>
+    </div>
+    <script>
+        window.onload = function() {
+            window.print(); // Abre a caixa de diálogo de impressão
+        };
+    </script>
+</body>
+</html>

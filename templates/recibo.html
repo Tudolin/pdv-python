@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recibo</title>
+    <!-- Adicione o link para o Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Adicione o link para o seu arquivo style.css -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">CARRINHO</h1>
+        <ul class="list-group mt-4">
+            {% for item, valor, peso in recibo %}
+                <li class="list-group-item">
+                    <strong>{{ item }}</strong> - Valor: R$ {{ valor|round(2) }} ({{ peso }} kg)
+                </li>
+            {% endfor %}
+        </ul>
+        <h2 class="mt-4 text-center">Total: R$ {{ total|round(2) }}</h2>
+        <div class="text-center">
+            <br><br>
+            <form action="/" method="GET">
+                <button type="submit" class="btn btn-primary">Continuar Comprando</button>
+                <br>
+            </form>
+            
+            <form action="/finalizar" method="POST">
+                <br>
+                <label for="metodo_pagamento">Método de Pagamento:</label>
+                <select id="metodo_pagamento" name="metodo_pagamento" class="form-control" required>
+                    <option value="cartao">Cartão</option>
+                    <option value="dinheiro">Dinheiro</option>
+                    <option value="pix">PIX</option>
+                </select>
+                <br>
+                <label for="quantia_pg" id="texto_quantia">Quantia Paga em dinheiro</label><br>
+                <input type="text" name="quantia_pg" id="quantia_pg"><br>
+                <button type="submit" class="btn btn-success mt-3">Finalizar Compra</button>
+            </form>
+    
+            <!-- Adicione o trecho de código JavaScript aqui -->
+            <script>
+                // Obtém a referência ao elemento select
+                const metodoPagamentoSelect = document.getElementById("metodo_pagamento");
+                // Obtém a referência ao campo de entrada da quantia
+                const quantiaPgInput = document.getElementById("quantia_pg", "texto_quantia");
+    
+                // Adiciona um ouvinte de evento para detectar mudanças no select
+                function verificarMetodoPagamento() {
+                    if (metodoPagamentoSelect.value === "dinheiro") {
+                        quantiaPgInput.style.display = "block"; // Exibe o campo
+                    } else {
+                        quantiaPgInput.value = 0;
+                        quantiaPgInput.style.display = "none"; // Oculta o campo
+                    }
+                }
+    
+                // Executa a função inicialmente
+                verificarMetodoPagamento();
+    
+                // Adiciona um ouvinte de evento para detectar mudanças no select
+                metodoPagamentoSelect.addEventListener("change", verificarMetodoPagamento);
+            </script>
+        </div>
+    </body>
+    </html>

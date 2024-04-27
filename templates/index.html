@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDV - Ponto de Venda</title>
+    <!-- Adicione o link para o Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Adicione o link para o seu arquivo style.css -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container text-center mt-5">
+        <h1>PDV - Ponto de Venda</h1>
+        <form method="POST">
+            <label for="cod_bar"><strong>Código de Barras:</strong></label>
+            <input type="text" id="cod_bar" name="cod_bar" required autofocus class="form-control">
+            <button type="submit" class="btn btn-primary mt-3">Adicionar ao Carrinho</button>
+        </form>
+        {% if error %}
+            <p class="text-danger mt-3">Código de barras inválido.</p>
+        {% endif %}
+        {% if item %}
+            <p class="mt-4">Produto: {{ item }}</p>
+            <p>Valor do item: R$ {{ (valor * preco) | round(2) }}</p>
+            <p>Preço por KG: R$ {{ preco }}</p>
+            <p>Peso: {{ valor | round(3) }} kg</p>
+        {% endif %}
+        <a href="/recibo" class="btn btn-success mt-4">Ver Carrinho</a>
+    </div>
+</body>
+</html>

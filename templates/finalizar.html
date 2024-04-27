@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recibo</title>
+    <!-- Adicione o link para o Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Adicione o link para o seu arquivo style.css -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Recibo</h1>
+        <h2 class="mt-4 text-center" style="color: green;">Total: R$ {{ total|round(2) }}</h2>
+
+        <!-- Formulário para método de pagamento -->
+        <form action="/recibo" method="POST" target="_blank" class="mt-4">
+            <div class="form-group">
+                <br>
+                <h2 class="mt-4 text-center" style="color:red" id="troco_total">Troco: R$ {{ troco|round(2) }}</h2>
+            </div>
+            <div class="form-group">
+                <label  for="cpf"><strong>CPF:</strong></label>
+                <input type="text"  id="cpf" name="cpf" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">Finalizar Compra</button>
+        </form>
+
+        <!-- Botão para retornar ao PDV -->
+        <form action="/zerar_carrinho" method="POST">
+            <button type="submit" class="btn btn-secondary mt-3">Retornar ao PDV</button>
+        </form>
+    </div>
+</body>
+</html>
