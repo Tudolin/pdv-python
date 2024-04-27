@@ -15,7 +15,7 @@
         <ul class="list-group mt-4">
             {% for item, valor, peso in recibo %}
                 <li class="list-group-item">
-                    <strong>{{ item }}</strong> - Valor: R$ {{ valor|round(2) }} ({{ peso }} kg)
+                    <strong>{{ item }}</strong> - Valor: R$ {{ valor|round(2) }} ({{ peso }} kg / uni)
                 </li>
             {% endfor %}
         </ul>

@@ -20,14 +20,19 @@ def ler_cod(cod_bar):
     valor = cod_bar[7:]  # Os últimos 7 dígitos representam o valor total
     valor = int(valor)  # Converter para valor em reais (dividir por 100)
 
-    try:
-        item = data[item_cod]
-        nome = item['nome']
-        preco = float(item[' preco '].replace('R$ ', ''))
-        peso = (valor / preco) / 1000
-        return nome, peso, preco
-    except KeyError:
-        raise ValueError("Código de barras inválido")
+    if item_cod[:2] != "20":
+        preco = float(data[item_cod][' preco '].replace('R$ ', ''))
+        peso = 1
+        return data[item_cod]['nome'], peso, preco
+    else:
+        try:
+            item = data[item_cod]
+            nome = item['nome']
+            preco = float(item[' preco '].replace('R$ ', ''))
+            peso = (valor / preco) / 1000
+            return nome, peso, preco
+        except KeyError:
+            raise ValueError("Código de barras inválido")
 
 # Lista para armazenar os itens do carrinho
 carrinho = []

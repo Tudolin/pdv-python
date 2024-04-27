@@ -14,7 +14,7 @@
         <h1>PDV - Ponto de Venda</h1>
         <form method="POST">
             <label for="cod_bar"><strong>Código de Barras:</strong></label>
-            <input type="text" id="cod_bar" name="cod_bar" required autofocus class="form-control">
+            <input type="number" id="cod_bar" name="cod_bar" required autofocus class="form-control">
             <button type="submit" class="btn btn-primary mt-3">Adicionar ao Carrinho</button>
         </form>
         {% if error %}
