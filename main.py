@@ -18,9 +18,8 @@ with open("instance/produtos_export.csv") as csvfile:
 def ler_cod(cod_bar):
     valor = cod_bar[7:]  # Os últimos 7 dígitos representam o valor total
     valor = int(valor)  # Converter para valor em reais (dividir por 100)
-
+    item_cod = cod_bar
     if item_cod[:2] != "20":
-        item_cod = cod_bar
         preco = float(data[item_cod][' preco '].replace('R$ ', ''))
         peso = 1
         return data[item_cod]['nome'], peso, preco
