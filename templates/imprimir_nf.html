@@ -30,19 +30,19 @@
         <br>
         ====================================
         <h3>Casa das Massas Pinheirinho - (41) 3268-2817</h3>
-        <p>Rua Mário Gomes Cezar - Nº230 - Pinheirinho</p>
-        <p>Curitiba - PR</p>
-        <p>Data e Hora: {{ data_hora }}</p>
+        <h4>Rua Mário Gomes Cezar - Nº230 - Pinheirinho</h4>
+        <h4>Curitiba - PR</h4>
+        <p><strong>Data e Hora: {{ data_hora }}</strong></p>
         ====================================
         <h2>Itens Comprados:</h2>
         <ul>
             {% for item, valor_item, peso in recibo %}
-                <li>{{ item }} - R$ {{ valor_item|round(2) }}</li>
+                <li><strong>Peso : {{ (valor_item / peso)|round(3) }} Kg - {{ item }} | Valor : R$ {{ valor_item|round(2) }}</strong></li>
             {% endfor %}
         </ul>
-
-        <p><strong> Total: R$ {{ total|round(2) }} </strong></p>
-        <p>CPF: {{ cpf }}</p>
+        ====================================
+        <p><strong> Total: R$ {{ total|round(2) }} {{ metodo_pagamento }}</strong></p>
+        <h4>CPF: {{ cpf }}</h4>
         ====================================
         <p>Parabéns, você acaba de comprar a melhor massa da região!!</p>
         <p>Muito obrigado pela preferencia, volte sempre c:</p>

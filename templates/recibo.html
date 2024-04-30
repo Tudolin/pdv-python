@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <!-- Adicione o link para o seu arquivo style.css -->
     <link rel="stylesheet" href="/static/style.css">
+    <script src="https://igorescobar.github.io/jQuery-Mask-Plugin/js/jquery.mask.min.js"></script>   
 </head>
 <body>
     <div class="container mt-5">
@@ -37,12 +38,13 @@
                 </select>
                 <br>
                 <label for="quantia_pg" id="texto_quantia">Quantia Paga em dinheiro</label><br>
-                <input type="text" name="quantia_pg" id="quantia_pg"><br>
+                <input style="currency;" type="text" autofocus name="quantia_pg" id="quantia_pg"><br>
                 <button type="submit" class="btn btn-success mt-3">Finalizar Compra</button>
             </form>
     
             <!-- Adicione o trecho de código JavaScript aqui -->
             <script>
+                const formatarDinheiro = document.getElementById("quantia_pg")
                 // Obtém a referência ao elemento select
                 const metodoPagamentoSelect = document.getElementById("metodo_pagamento");
                 // Obtém a referência ao campo de entrada da quantia
@@ -57,7 +59,8 @@
                         quantiaPgInput.style.display = "none"; // Oculta o campo
                     }
                 }
-    
+                
+
                 // Executa a função inicialmente
                 verificarMetodoPagamento();
     

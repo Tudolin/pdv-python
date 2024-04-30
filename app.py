@@ -95,13 +95,21 @@ def checkout():
 
 @app.route('/zerar_carrinho', methods=['POST'])
 def finalizar_compra():
-    global carrinho  # Usamos a variável global para acessar o carrinho
-
-    # Lógica para finalizar a compra (limpar o carrinho)
-    carrinho = []  # Zera o carrinho
-
-    # Redireciona para a página inicial
+    global carrinho 
+    carrinho = []
     return redirect('/')
+
+@app.route('/recibo', methods=['POST'])
+def imprimir_nf():
+    total = calcular_total(carrinho)
+    recibo = imprimir_recibo(carrinho, total)
+    data_hora = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    cpf = request.form.get("cpf") 
+    metodo_pagamento = request.form.get("metodo_pagamento")
+    return render_template('imprimir_nf.html', recibo=recibo, total=total, data_hora=data_hora, cpf=cpf, metodo_pagamento=metodo_pagamento)
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
 @app.route('/imprimir_nf', methods=['POST'])
 def generate_receipt():
@@ -111,8 +119,6 @@ def generate_receipt():
     if len(teste) < 11:
         teste = teste.zfill(11)
     cpf = '{}.{}.{}-{}'.format(teste[:3], teste[3:6], teste[6:9], teste[9:])
-    metodo_pagamento = metodo_pagamento
-    # Gerando o recibo em formato PDF
     filename = "receipt.pdf"
     c = canvas.Canvas(filename, pagesize=letter)
     c.drawString(100, 700, "Recibo Não Fiscal")
@@ -121,9 +127,6 @@ def generate_receipt():
 
     # Adicione os itens comprados ao recibo
     y = 640
-    for item, valor_item, peso in recibo:
-        c.drawString(100, y, f"{item} - R$ {valor_item:.2f}")
-        y -= 20
 
     c.drawString(100, y, f"Total: R$ {total:.2f}")
     c.save()
