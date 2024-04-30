@@ -133,15 +133,6 @@ def generate_receipt():
 
     return f"Recibo gerado com sucesso! Verifique o arquivo {filename}."
 
-@app.route('/recibo', methods=['POST'])
-def imprimir_nf():
-    total = calcular_total(carrinho)
-    recibo = imprimir_recibo(carrinho, total)
-    data_hora = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-    cpf = request.form.get("cpf")  # Se o CPF foi incluído no formulário
-
-    # Renderizando o recibo não fiscal
-    return render_template('imprimir_nf.html', recibo=recibo, total=total, data_hora=data_hora, cpf=cpf)
 
 if __name__ == '__main__':
     app.run(debug=True)
