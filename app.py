@@ -144,4 +144,4 @@ def imprimir_nf():
     return render_template('imprimir_nf.html', recibo=recibo, total=total, data_hora=data_hora, cpf=cpf)
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=True)
