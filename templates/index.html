@@ -23,8 +23,12 @@
         {% if item %}
             <p class="mt-4">Produto: {{ item }}</p>
             <p>Valor do item: R$ {{ (valor * preco) | round(2) }}</p>
-            <p>Preço por KG: R$ {{ preco }}</p>
-            <p>Peso: {{ valor | round(3) }} kg</p>
+            {% if item == "PRODUTO POR KG" %}
+                <p>Peso: 1 Unidade </p>
+            {% else %}
+                <p>Preço por KG: R$ {{ preco }}</p>
+                <p>Peso: {{ valor | round(3) }} kg</p>
+            {% endif %}
         {% endif %}
         <a href="/recibo" class="btn btn-success mt-4">Ver Carrinho</a>
     </div>
