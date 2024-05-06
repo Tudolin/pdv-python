@@ -1,14 +1,15 @@
 import csv
-import datetime
+import json
+import os
+from datetime import datetime
 
-from flask import Flask, redirect, render_template, request
+from flask import Flask, redirect, render_template, request, url_for
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
 app = Flask(__name__, static_folder='static')
 
 metodo_pagamento = ""
-# Dados dos produtos (mesma estrutura do seu código)
 data = {}
 with open("instance/produtos_export.csv") as csvfile:
     reader = csv.DictReader(csvfile)
@@ -16,8 +17,8 @@ with open("instance/produtos_export.csv") as csvfile:
         data[row['codigo_barras']] = row
 
 def ler_cod(cod_bar):
-    valor = cod_bar[7:]  # Os últimos 7 dígitos representam o valor total
-    valor = int(valor)  # Converter para valor em reais (dividir por 100)
+    valor = cod_bar[7:]  
+    valor = int(valor)
     item_cod = cod_bar
     if item_cod[:2] != "20":
         preco = float(data[item_cod][' preco '].replace('R$ ', ''))
@@ -38,8 +39,31 @@ def ler_cod(cod_bar):
         except KeyError:
             raise ValueError("Código de barras inválido")
 
-# Lista para armazenar os itens do carrinho
+def adicionar_venda(carrinho, total, cpf):
+    try:
+        with open('vendas.json', 'r') as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        data = {"vendas": []}
+
+    venda = {
+        datetime.now().strftime("%d-%m-%Y"): {
+            "valor": round(total, 2),
+            "cpf": cpf,
+            "itens": {i: {"nome": item, "peso": round(valor_item, 3)} for i, (item, valor_item, _) in enumerate(carrinho, start=1)}
+        }
+    }
+
+    data["vendas"].append(venda)
+
+    with open('vendas.json', 'w') as f:
+        json.dump(data, f, indent=4)
+
 carrinho = []
+
+def print_pdf(filename):
+    print_command = f"print /d:my_printer {filename}"
+    os.system(print_command)
 
 @app.route('/', methods=['GET', 'POST'])
 def pdv():
@@ -75,6 +99,12 @@ def imprimir_recibo(carrinho, total):
         recibo.append((item, valor_item, peso))
     return recibo
 
+@app.route('/delete/<item>', methods=['POST'])
+def delete_item(item):
+    global carrinho
+    carrinho = [i for i in carrinho if i[0] != item]
+    return redirect(url_for('exibir_recibo'))
+
 @app.route('/finalizar', methods=['POST'])
 def checkout():
 
@@ -103,37 +133,61 @@ def finalizar_compra():
     carrinho = []
     return redirect('/')
 
+
+# Utilizando o caminho /recibo, declarada em 'finalizar.html', gerara uma webpage com o recibo.
 @app.route('/recibo', methods=['POST'])
 def imprimir_nf():
     total = calcular_total(carrinho)
     recibo = imprimir_recibo(carrinho, total)
-    data_hora = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    data_hora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     cpf = request.form.get("cpf") 
     metodo_pagamento = request.form.get("metodo_pagamento")
+    adicionar_venda(carrinho, total, cpf)
+
     return render_template('imprimir_nf.html', recibo=recibo, total=total, data_hora=data_hora, cpf=cpf, metodo_pagamento=metodo_pagamento)
 
-if __name__ == '__main__':
-    app.run(debug=True)
-
-@app.route('/imprimir_nf', methods=['POST'])
+# Utilizando o caminho /gerar_recibo, declarada em 'finalizar.html', gerara um pdf com o recibo.
+@app.route('/gerar_recibo', methods=['POST'])
 def generate_receipt():
     total = calcular_total(carrinho)
-    data_hora = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-    teste = request.form.get("cpf")
-    if len(teste) < 11:
-        teste = teste.zfill(11)
-    cpf = '{}.{}.{}-{}'.format(teste[:3], teste[3:6], teste[6:9], teste[9:])
+    data_hora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    cpf = request.form.get("cpf")
     filename = "receipt.pdf"
     c = canvas.Canvas(filename, pagesize=letter)
-    c.drawString(100, 700, "Recibo Não Fiscal")
-    c.drawString(100, 680, f"Data e Hora: {data_hora}")
-    c.drawString(100, 660, f"CPF: {cpf}")
+    y = 750
+    c.drawString(100, y, "Recibo Não Fiscal")
+    y -= 20
+    c.drawString(100, y, "-----------------------------------------")
+    y -= 20
+    c.drawString(100, y, "Casa das Massas Pinheirinho - (41) 3268-2817")
+    y -= 15
+    c.drawString(100, y, "Rua Mário Gomes Cezar - Nº230 - Pinheirinho")
+    y -= 15
+    c.drawString(100, y, f"Data e Hora: {data_hora}")
+    y -= 15
+    c.drawString(100, y, "-----------------------------------------")
+    y -= 20
 
-    # Adicione os itens comprados ao recibo
-    y = 640
-
+    for item, valor_item, peso in carrinho:
+        c.drawString(100, y, f"Peso : {valor_item:.3f} Kg | {item} Preço por KG / Unidade {peso} | Valor : R$ {(peso * valor_item):.2f}")
+        y -= 20
+    c.drawString(100, y, "-----------------------------------------")
+    y -= 20
     c.drawString(100, y, f"Total: R$ {total:.2f}")
+    y -= 10
+    c.drawString(100, y, f"CPF: {cpf}")
+    y -= 20
+    c.drawString(100, y, "-----------------------------------------")
+    y -= 20
+    c.drawString(100, y, "Parabéns, você acaba de comprar a melhor massa da região!!")
+    y -= 10
+    c.drawString(100, y, "Muito obrigado pela preferencia, volte sempre c:")
+
     c.save()
+
+    print_pdf('receipt.pdf')
+
+    adicionar_venda(carrinho, total, cpf)
 
     return f"Recibo gerado com sucesso! Verifique o arquivo {filename}."
 

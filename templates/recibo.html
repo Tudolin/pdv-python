@@ -16,7 +16,9 @@
         <ul class="list-group mt-4">
             {% for item, valor, peso in recibo %}
                 <li class="list-group-item">
-                    <strong>{{ item }}</strong> - Valor: R$ {{ valor|round(2) }} ({{ peso }} kg / uni)
+                    <strong>{{ item }}</strong> - Valor: R$ {{ valor|round(2) }} ({{ peso }} kg / uni)<form action="{{ url_for('delete_item', item=item) }}" method="post">
+                        <button type="submit" class="btn btn-danger">DELETE</button>
+                    </form>
                 </li>
             {% endfor %}
         </ul>
@@ -42,29 +44,23 @@
                 <button type="submit" class="btn btn-success mt-3">Finalizar Compra</button>
             </form>
     
-            <!-- Adicione o trecho de código JavaScript aqui -->
             <script>
                 const formatarDinheiro = document.getElementById("quantia_pg")
-                // Obtém a referência ao elemento select
                 const metodoPagamentoSelect = document.getElementById("metodo_pagamento");
-                // Obtém a referência ao campo de entrada da quantia
                 const quantiaPgInput = document.getElementById("quantia_pg", "texto_quantia");
-    
-                // Adiciona um ouvinte de evento para detectar mudanças no select
+
                 function verificarMetodoPagamento() {
                     if (metodoPagamentoSelect.value === "dinheiro") {
-                        quantiaPgInput.style.display = "block"; // Exibe o campo
+                        quantiaPgInput.style.display = "block";
                     } else {
                         quantiaPgInput.value = 0;
-                        quantiaPgInput.style.display = "none"; // Oculta o campo
+                        quantiaPgInput.style.display = "none";
                     }
                 }
                 
 
-                // Executa a função inicialmente
                 verificarMetodoPagamento();
     
-                // Adiciona um ouvinte de evento para detectar mudanças no select
                 metodoPagamentoSelect.addEventListener("change", verificarMetodoPagamento);
             </script>
         </div>
