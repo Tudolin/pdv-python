@@ -1,0 +1,24 @@
+{
+    "vendas": [
+        {
+            "06-05-2024": {
+                "valor": 125.34,
+                "cpf": "136.216.149-74",
+                "itens": {
+                    "1": {
+                        "nome": "NHOQUE",
+                        "peso": 0.22
+                    },
+                    "2": {
+                        "nome": "CAPELETI DE FRANGO",
+                        "peso": 1.686
+                    },
+                    "3": {
+                        "nome": "COCA-COLA 2L",
+                        "peso": 1
+                    }
+                }
+            }
+        }
+    ]
+}
