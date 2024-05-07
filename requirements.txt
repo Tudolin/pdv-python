@@ -9,3 +9,4 @@ MarkupSafe==2.1.5
 pillow==10.3.0
 reportlab==4.2.0
 Werkzeug==3.0.2
+gunicorn==20.1.0
