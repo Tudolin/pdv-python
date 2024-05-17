@@ -15,7 +15,7 @@
         <h2 class="mt-4 text-center" style="color: green;">Total: R$ {{ total|round(2) }}</h2>
 
         <!-- Formulário para método de pagamento -->
-        <form action="/recibo" method="POST" target="_blank" class="mt-4">
+        <form action="/gerar_recibo" method="POST" target="_blank" class="mt-4">
             <div class="form-group">
                 <br>
                 <h2 class="mt-4 text-center" style="color:red" id="troco_total">Troco: R$ {{ troco|round(2) }}</h2>
