@@ -21,8 +21,8 @@ for venda in dados['vendas']:
 def login():
     nav.get("https://sso.iob.com.br/signin/?response_type=code&scope=&client_id=c17d4225-9d57-401b-b4fd-32503121f55b&redirect_uri=https://emissor.iob.com.br&lblcontinue=Acessar%20Emissor")
 
-    nav.find_element(By.XPATH, '//*[@id="username"]').send_keys("lacasadipastafilial@hotmail.com")
-    nav.find_element(By.XPATH, '//*[@id="password"]').send_keys("#Casa03902")
+    nav.find_element(By.XPATH, '//*[@id="username"]').send_keys("")
+    nav.find_element(By.XPATH, '//*[@id="password"]').send_keys("")
 
     # Aqui está a pausa. O script vai parar aqui até que você pressione Enter no terminal
     input("Por favor, complete o captcha e depois pressione Enter para continuar...")
